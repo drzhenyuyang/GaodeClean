@@ -7147,7 +7147,15 @@ __attribute__((constructor)) static void Initialize(void) {
         // 被删，门禁「版本串一致性」与装机核对双双失效。此处用内存屏障把该串钉住，
         // 保证 strings 可见、但不涉及任何功能路径（不产生日志、不改变行为）。
         __asm__ volatile("" :: "r"(kGCVersion.UTF8String) : "memory");
-        if (![NSBundle.mainBundle.bundleIdentifier isEqualToString:GCStrAt(281)]) return;
+        
+        NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
+        NSString *targetID = GCStrAt(281);
+        
+        if (![bundleID isEqualToString:targetID] &&
+            ![bundleID hasPrefix:[targetID stringByAppendingString:@"."]]) {
+            return;
+        }
+
         AjxCache = [NSMutableDictionary dictionary];
         Pages = [NSHashTable weakObjectsHashTable];
         NearbyControllers = [NSHashTable weakObjectsHashTable];
